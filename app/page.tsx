@@ -1,65 +1,162 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback } from 'react';
+import ContextPanel from '@/components/ContextPanel';
+import ImageUploader from '@/components/ImageUploader';
+import ImageCard from '@/components/ImageCard';
+import ProgressBar from '@/components/ProgressBar';
+import DownloadButton from '@/components/DownloadButton';
+import type { Language, ProcessedImage, AnalysisContext } from '@/lib/types';
 
 export default function Home() {
+  const [brand, setBrand] = useState('');
+  const [niche, setNiche] = useState('');
+  const [url, setUrl] = useState('');
+  const [language, setLanguage] = useState<Language>('ES');
+  const [city, setCity] = useState('');
+  const [regions, setRegions] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState('');
+  const [siteText, setSiteText] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
+  const [images, setImages] = useState<ProcessedImage[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const done = images.filter(i => i.status === 'done').length;
+  const errors = images.filter(i => i.status === 'error').length;
+  const allFinished = images.length > 0 && done + errors === images.length;
+
+  async function handleUrlChange(value: string) {
+    setUrl(value);
+    setSiteText('');
+    if (!value.trim()) return;
+    try { new URL(value); } catch { return; }
+
+    setIsScraping(true);
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: value }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSiteText(data.text || '');
+      }
+    } catch {
+      // no-op: continúa sin texto del sitio
+    } finally {
+      setIsScraping(false);
+    }
+  }
+
+  const handleFilesAdded = useCallback((files: File[]) => {
+    const next: ProcessedImage[] = files.map(file => ({
+      id: `${file.name}-${Date.now()}-${Math.random()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      status: 'pending',
+    }));
+    setImages(prev => [...prev, ...next].slice(0, 20));
+  }, []);
+
+  async function handleAnalyze() {
+    if (!niche.trim()) { alert('Completá la temática del sitio.'); return; }
+    if (images.length === 0) { alert('Subí al menos una imagen.'); return; }
+
+    setIsAnalyzing(true);
+    const context: AnalysisContext = {
+      niche, siteText, language,
+      ...(city && { city }),
+      ...(regions.length && { regions }),
+      ...(keywords && { keywords }),
+    };
+
+    for (const image of images) {
+      if (image.status !== 'pending') continue;
+      setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'analyzing' } : i));
+
+      try {
+        const base64 = await fileToBase64(image.file);
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64, mimeType: image.file.type, context }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const result = await res.json();
+        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'done', result } : i));
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Error desconocido';
+        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'error', error } : i));
+      }
+    }
+    setIsAnalyzing(false);
+  }
+
+  function handleReset() {
+    images.forEach(i => URL.revokeObjectURL(i.previewUrl));
+    setBrand(''); setNiche(''); setUrl(''); setLanguage('ES');
+    setCity(''); setRegions([]); setKeywords(''); setSiteText('');
+    setImages([]);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ marginBottom: 40, textAlign: 'center' }}>
+        <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 8px' }}>
+          <span className="gradient-text">SEO Image Renamer</span>
+        </h1>
+        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 15 }}>
+          Generá nombres y alt text optimizados para posicionamiento orgánico
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <ContextPanel
+          brand={brand} niche={niche} url={url} language={language}
+          city={city} regions={regions} keywords={keywords} isScraping={isScraping}
+          onBrandChange={setBrand} onNicheChange={setNiche} onUrlChange={handleUrlChange}
+          onLanguageChange={setLanguage} onCityChange={setCity}
+          onRegionsChange={setRegions} onKeywordsChange={setKeywords}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+        <ImageUploader onFilesAdded={handleFilesAdded} disabled={isAnalyzing} />
+
+        {images.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {images.map(img => <ImageCard key={img.id} image={img} />)}
+          </div>
+        )}
+
+        {isAnalyzing && <ProgressBar total={images.length} done={done} errors={errors} />}
+
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          {allFinished ? (
+            <>
+              <DownloadButton images={images} brand={brand} />
+              <button
+                onClick={handleReset}
+                style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 20px', color: 'var(--text)', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+              >
+                Nueva consulta
+              </button>
+            </>
+          ) : (
+            <button className="btn-primary" onClick={handleAnalyze} disabled={isAnalyzing || images.length === 0} style={{ fontSize: 15, padding: '12px 28px' }}>
+              {isAnalyzing ? 'Analizando...' : 'Analizar'}
+            </button>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
