@@ -1,10 +1,15 @@
 import type { ProcessedImage } from './types';
 
+function escapeCsvField(value: string): string {
+  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
 export function buildCsvContent(images: ProcessedImage[]): string {
   const header = 'archivo,alt_text';
   const rows = images
     .filter(img => img.result)
-    .map(img => `${img.result!.filename}.jpg,"${img.result!.alt}"`);
+    .map(img => `${img.result!.filename}.jpg,${escapeCsvField(img.result!.alt)}`);
   return [header, ...rows].join('\n');
 }
 
@@ -59,6 +64,9 @@ export async function downloadZip(images: ProcessedImage[], brand: string): Prom
   const a = document.createElement('a');
   a.href = URL.createObjectURL(content);
   a.download = buildZipFilename(brand);
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }

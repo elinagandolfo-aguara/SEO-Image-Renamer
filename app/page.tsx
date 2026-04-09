@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import ContextPanel from '@/components/ContextPanel';
 import ImageUploader from '@/components/ImageUploader';
 import ImageCard from '@/components/ImageCard';
@@ -21,6 +21,9 @@ export default function Home() {
   const [images, setImages] = useState<ProcessedImage[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  const scrapeAbortRef = useRef<AbortController | null>(null);
+  const scrapeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const done = images.filter(i => i.status === 'done').length;
   const errors = images.filter(i => i.status === 'error').length;
   const allFinished = images.length > 0 && done + errors === images.length;
@@ -28,25 +31,35 @@ export default function Home() {
   async function handleUrlChange(value: string) {
     setUrl(value);
     setSiteText('');
+
+    // Cancel prior timer and in-flight request
+    if (scrapeTimerRef.current) clearTimeout(scrapeTimerRef.current);
+    scrapeAbortRef.current?.abort();
+
     if (!value.trim()) return;
     try { new URL(value); } catch { return; }
 
-    setIsScraping(true);
-    try {
-      const res = await fetch('/api/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: value }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSiteText(data.text || '');
+    scrapeTimerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      scrapeAbortRef.current = controller;
+      setIsScraping(true);
+      try {
+        const res = await fetch('/api/scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: value }),
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSiteText(data.text || '');
+        }
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') return;
+      } finally {
+        setIsScraping(false);
       }
-    } catch {
-      // no-op: continúa sin texto del sitio
-    } finally {
-      setIsScraping(false);
-    }
+    }, 800);
   }
 
   const handleFilesAdded = useCallback((files: File[]) => {
@@ -71,26 +84,29 @@ export default function Home() {
       ...(keywords && { keywords }),
     };
 
-    for (const image of images) {
-      if (image.status !== 'pending') continue;
-      setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'analyzing' } : i));
+    try {
+      for (const image of images) {
+        if (image.status !== 'pending') continue;
+        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'analyzing' } : i));
 
-      try {
-        const base64 = await fileToBase64(image.file);
-        const res = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: base64, mimeType: image.file.type, context }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const result = await res.json();
-        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'done', result } : i));
-      } catch (err) {
-        const error = err instanceof Error ? err.message : 'Error desconocido';
-        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'error', error } : i));
+        try {
+          const base64 = await fileToBase64(image.file);
+          const res = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: base64, mimeType: image.file.type, context }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const result = await res.json();
+          setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'done', result } : i));
+        } catch (err) {
+          const error = err instanceof Error ? err.message : 'Error desconocido';
+          setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'error', error } : i));
+        }
       }
+    } finally {
+      setIsAnalyzing(false);
     }
-    setIsAnalyzing(false);
   }
 
   function handleReset() {
@@ -155,7 +171,10 @@ export default function Home() {
 async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(',')[1]);
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.slice(dataUrl.indexOf(',') + 1));
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });

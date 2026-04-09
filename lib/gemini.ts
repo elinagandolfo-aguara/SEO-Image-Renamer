@@ -2,14 +2,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { buildPrompt } from './prompt';
 import type { AnalysisContext, ImageResult } from './types';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
 export async function analyzeImage(
   imageBase64: string,
   mimeType: string,
   context: AnalysisContext,
 ): Promise<ImageResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured');
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
   const prompt = buildPrompt(context);
 
   const result = await model.generateContent([
