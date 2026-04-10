@@ -1,6 +1,6 @@
 # SEO Image Renamer — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a Next.js web tool that analiza imágenes con Gemini Flash Vision y genera nombres de archivo y alt text SEO-optimizados, exportando las imágenes renombradas + un CSV en un ZIP.
 
@@ -48,20 +48,20 @@ __tests__/
 **Files:**
 - Create: `package.json`, `next.config.ts`, `tsconfig.json`, `jest.config.ts`, `jest.setup.ts`, `.env.local`
 
-- [ ] **Step 1: Scaffold Next.js**
+- [x] **Step 1: Scaffold Next.js**
 
 ```bash
 npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"
 ```
 
-- [ ] **Step 2: Install dependencies**
+- [x] **Step 2: Install dependencies**
 
 ```bash
 npm install @google/generative-ai cheerio jszip
 npm install --save-dev jest @types/jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event ts-jest
 ```
 
-- [ ] **Step 3: Configure Jest**
+- [x] **Step 3: Configure Jest**
 
 Create `jest.config.ts`:
 ```typescript
@@ -84,7 +84,7 @@ Create `jest.setup.ts`:
 import '@testing-library/jest-dom';
 ```
 
-- [ ] **Step 4: Crear .env.local**
+- [x] **Step 4: Crear .env.local**
 
 ```
 GEMINI_API_KEY=your-key-here
@@ -92,14 +92,14 @@ GEMINI_API_KEY=your-key-here
 
 Obtener key gratis en: https://aistudio.google.com/app/apikey
 
-- [ ] **Step 5: Verificar**
+- [x] **Step 5: Verificar**
 
 ```bash
 npm run dev
 ```
 Expected: Next.js corriendo en http://localhost:3000
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git init
@@ -114,7 +114,7 @@ git commit -m "feat: scaffold Next.js con Gemini, cheerio, jszip y Jest"
 **Files:**
 - Create: `lib/types.ts`
 
-- [ ] **Step 1: Escribir types**
+- [x] **Step 1: Escribir types**
 
 Create `lib/types.ts`:
 ```typescript
@@ -165,7 +165,7 @@ export interface AnalyzeResponse {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lib/types.ts
@@ -180,7 +180,7 @@ git commit -m "feat: shared TypeScript types"
 - Create: `lib/prompt.ts`
 - Create: `__tests__/lib/prompt.test.ts`
 
-- [ ] **Step 1: Escribir tests que fallan**
+- [x] **Step 1: Escribir tests que fallan**
 
 Create `__tests__/lib/prompt.test.ts`:
 ```typescript
@@ -240,14 +240,14 @@ describe('buildPrompt', () => {
 });
 ```
 
-- [ ] **Step 2: Correr tests — deben fallar**
+- [x] **Step 2: Correr tests — deben fallar**
 
 ```bash
 npx jest __tests__/lib/prompt.test.ts --no-coverage
 ```
 Expected: FAIL — `Cannot find module '@/lib/prompt'`
 
-- [ ] **Step 3: Implementar prompt builder**
+- [x] **Step 3: Implementar prompt builder**
 
 Create `lib/prompt.ts`:
 ```typescript
@@ -302,14 +302,14 @@ export function buildPrompt(ctx: AnalysisContext): string {
 }
 ```
 
-- [ ] **Step 4: Correr tests — deben pasar**
+- [x] **Step 4: Correr tests — deben pasar**
 
 ```bash
 npx jest __tests__/lib/prompt.test.ts --no-coverage
 ```
 Expected: PASS — 10/10
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/prompt.ts __tests__/lib/prompt.test.ts
@@ -324,7 +324,7 @@ git commit -m "feat: prompt builder con few-shot examples e inyección de contex
 - Create: `lib/export.ts`
 - Create: `__tests__/lib/export.test.ts`
 
-- [ ] **Step 1: Escribir tests que fallan**
+- [x] **Step 1: Escribir tests que fallan**
 
 Create `__tests__/lib/export.test.ts`:
 ```typescript
@@ -395,14 +395,14 @@ describe('buildZipFilename', () => {
 });
 ```
 
-- [ ] **Step 2: Correr tests — deben fallar**
+- [x] **Step 2: Correr tests — deben fallar**
 
 ```bash
 npx jest __tests__/lib/export.test.ts --no-coverage
 ```
 Expected: FAIL — `Cannot find module '@/lib/export'`
 
-- [ ] **Step 3: Implementar export utilities**
+- [x] **Step 3: Implementar export utilities**
 
 Create `lib/export.ts`:
 ```typescript
@@ -472,14 +472,14 @@ export async function downloadZip(images: ProcessedImage[], brand: string): Prom
 }
 ```
 
-- [ ] **Step 4: Correr tests — deben pasar**
+- [x] **Step 4: Correr tests — deben pasar**
 
 ```bash
 npx jest __tests__/lib/export.test.ts --no-coverage
 ```
 Expected: PASS — 9/9
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/export.ts __tests__/lib/export.test.ts
@@ -493,7 +493,7 @@ git commit -m "feat: CSV generation, ZIP naming y conversión Canvas→JPEG"
 **Files:**
 - Create: `lib/scraper.ts`
 
-- [ ] **Step 1: Implementar scraper**
+- [x] **Step 1: Implementar scraper**
 
 Create `lib/scraper.ts`:
 ```typescript
@@ -538,7 +538,7 @@ export async function scrapeHomepage(url: string): Promise<string> {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lib/scraper.ts
@@ -552,7 +552,7 @@ git commit -m "feat: homepage scraper con cheerio y timeout de 10s"
 **Files:**
 - Create: `lib/gemini.ts`
 
-- [ ] **Step 1: Implementar cliente Gemini**
+- [x] **Step 1: Implementar cliente Gemini**
 
 Create `lib/gemini.ts`:
 ```typescript
@@ -586,7 +586,7 @@ export async function analyzeImage(
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add lib/gemini.ts
@@ -600,7 +600,7 @@ git commit -m "feat: Gemini Flash Vision client con limpieza de markdown fences"
 **Files:**
 - Create: `app/api/scrape/route.ts`
 
-- [ ] **Step 1: Implementar route**
+- [x] **Step 1: Implementar route**
 
 Create `app/api/scrape/route.ts`:
 ```typescript
@@ -633,7 +633,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Probar manualmente**
+- [x] **Step 2: Probar manualmente**
 
 ```bash
 curl -X POST http://localhost:3000/api/scrape \
@@ -642,7 +642,7 @@ curl -X POST http://localhost:3000/api/scrape \
 ```
 Expected: `{"text":"Example Domain. ..."}`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/api/scrape/route.ts
@@ -656,7 +656,7 @@ git commit -m "feat: /api/scrape con validación de URL y parsing cheerio"
 **Files:**
 - Create: `app/api/analyze/route.ts`
 
-- [ ] **Step 1: Implementar route**
+- [x] **Step 1: Implementar route**
 
 Create `app/api/analyze/route.ts`:
 ```typescript
@@ -680,7 +680,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add app/api/analyze/route.ts
@@ -695,7 +695,7 @@ git commit -m "feat: /api/analyze — integración Gemini Flash Vision"
 - Modify: `app/globals.css`
 - Modify: `app/layout.tsx`
 
-- [ ] **Step 1: Dark theme CSS**
+- [x] **Step 1: Dark theme CSS**
 
 Reemplazar contenido de `app/globals.css`:
 ```css
@@ -749,7 +749,7 @@ body {
 }
 ```
 
-- [ ] **Step 2: Layout con Inter**
+- [x] **Step 2: Layout con Inter**
 
 Reemplazar `app/layout.tsx`:
 ```tsx
@@ -773,14 +773,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-- [ ] **Step 3: Verificar**
+- [x] **Step 3: Verificar**
 
 ```bash
 npm run dev
 ```
 Expected: fondo `#0e0e11` en localhost:3000
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/globals.css app/layout.tsx
@@ -795,7 +795,7 @@ git commit -m "feat: dark theme CSS variables, keyframes y Inter font"
 - Create: `components/ContextPanel.tsx`
 - Create: `__tests__/components/ContextPanel.test.tsx`
 
-- [ ] **Step 1: Escribir tests que fallan**
+- [x] **Step 1: Escribir tests que fallan**
 
 Create `__tests__/components/ContextPanel.test.tsx`:
 ```tsx
@@ -854,14 +854,14 @@ describe('ContextPanel', () => {
 });
 ```
 
-- [ ] **Step 2: Correr tests — deben fallar**
+- [x] **Step 2: Correr tests — deben fallar**
 
 ```bash
 npx jest __tests__/components/ContextPanel.test.tsx --no-coverage
 ```
 Expected: FAIL — `Cannot find module '@/components/ContextPanel'`
 
-- [ ] **Step 3: Implementar ContextPanel**
+- [x] **Step 3: Implementar ContextPanel**
 
 Create `components/ContextPanel.tsx`:
 ```tsx
@@ -987,14 +987,14 @@ export default function ContextPanel({
 }
 ```
 
-- [ ] **Step 4: Correr tests — deben pasar**
+- [x] **Step 4: Correr tests — deben pasar**
 
 ```bash
 npx jest __tests__/components/ContextPanel.test.tsx --no-coverage
 ```
 Expected: PASS — 7/7
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/ContextPanel.tsx __tests__/components/ContextPanel.test.tsx
@@ -1008,7 +1008,7 @@ git commit -m "feat: ContextPanel con panel colapsable, toggle idioma y tags de 
 **Files:**
 - Create: `components/ImageUploader.tsx`
 
-- [ ] **Step 1: Implementar**
+- [x] **Step 1: Implementar**
 
 Create `components/ImageUploader.tsx`:
 ```tsx
@@ -1063,7 +1063,7 @@ export default function ImageUploader({ onFilesAdded, disabled }: Props) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add components/ImageUploader.tsx
@@ -1077,7 +1077,7 @@ git commit -m "feat: ImageUploader con drag-and-drop y filtro de tipos"
 **Files:**
 - Create: `components/ImageCard.tsx`
 
-- [ ] **Step 1: Implementar**
+- [x] **Step 1: Implementar**
 
 Create `components/ImageCard.tsx`:
 ```tsx
@@ -1137,7 +1137,7 @@ export default function ImageCard({ image }: { image: ProcessedImage }) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add components/ImageCard.tsx
@@ -1152,7 +1152,7 @@ git commit -m "feat: ImageCard con estados pending/analyzing/done/error"
 - Create: `components/ProgressBar.tsx`
 - Create: `components/DownloadButton.tsx`
 
-- [ ] **Step 1: Implementar ProgressBar**
+- [x] **Step 1: Implementar ProgressBar**
 
 Create `components/ProgressBar.tsx`:
 ```tsx
@@ -1181,7 +1181,7 @@ export default function ProgressBar({ total, done, errors }: Props) {
 }
 ```
 
-- [ ] **Step 2: Implementar DownloadButton**
+- [x] **Step 2: Implementar DownloadButton**
 
 Create `components/DownloadButton.tsx`:
 ```tsx
@@ -1213,7 +1213,7 @@ export default function DownloadButton({ images, brand }: Props) {
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add components/ProgressBar.tsx components/DownloadButton.tsx
@@ -1227,7 +1227,7 @@ git commit -m "feat: ProgressBar animada y DownloadButton con JSZip"
 **Files:**
 - Modify: `app/page.tsx`
 
-- [ ] **Step 1: Implementar page.tsx**
+- [x] **Step 1: Implementar page.tsx**
 
 Reemplazar `app/page.tsx`:
 ```tsx
@@ -1395,7 +1395,7 @@ async function fileToBase64(file: File): Promise<string> {
 }
 ```
 
-- [ ] **Step 2: Verificar flujo completo**
+- [x] **Step 2: Verificar flujo completo**
 
 ```bash
 npm run dev
@@ -1408,14 +1408,14 @@ Probar manualmente:
 4. Click en Analizar — cards deben ciclar por sus estados
 5. Descargar ZIP — debe contener imágenes renombradas + alt-text.csv
 
-- [ ] **Step 3: Correr todos los tests**
+- [x] **Step 3: Correr todos los tests**
 
 ```bash
 npx jest --no-coverage
 ```
 Expected: PASS — todos los tests
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/page.tsx
@@ -1429,29 +1429,29 @@ git commit -m "feat: página principal con flujo completo de análisis y exporta
 **Files:**
 - (ninguno nuevo)
 
-- [ ] **Step 1: Push a GitHub**
+- [x] **Step 1: Push a GitHub**
 
 ```bash
 git remote add origin https://github.com/<tu-org>/seo-image-renamer.git
 git push -u origin main
 ```
 
-- [ ] **Step 2: Importar en Vercel**
+- [x] **Step 2: Importar en Vercel**
 
 Ir a vercel.com → New Project → Import from GitHub → seleccionar `seo-image-renamer`
 
-- [ ] **Step 3: Agregar variable de entorno**
+- [x] **Step 3: Agregar variable de entorno**
 
 En Vercel → Project Settings → Environment Variables:
 ```
 GEMINI_API_KEY = <tu-api-key>
 ```
 
-- [ ] **Step 4: Deploy**
+- [x] **Step 4: Deploy**
 
 Vercel auto-deploya al hacer push. Verificar en el dashboard que el build pase.
 
-- [ ] **Step 5: Verificar en producción**
+- [x] **Step 5: Verificar en producción**
 
 Abrir la URL de Vercel y correr el flujo completo con una imagen real y una URL real.
 
@@ -1475,3 +1475,125 @@ Abrir la URL de Vercel y correr el flujo completo con una imagen real y una URL 
 - [x] Deploy en Vercel
 
 **Nota sobre Playwright vs cheerio:** El spec menciona Playwright. Este plan usa `cheerio` — es funcionalmente equivalente para sitios estáticos/SSR, compatible con Vercel sin configuración de binarios, y suficiente para el caso de uso. Si el equipo necesita sitios con JS rendering pesado, se puede upgradear en una iteración futura.
+
+---
+
+## Mejoras post-MVP (implementadas en producción)
+
+Implementadas durante el deploy y las primeras pruebas reales:
+
+- **Modelo Gemini:** cambiado a `gemini-2.5-flash-lite` (free tier más estable, menos saturación que `gemini-2.0-flash`)
+- **Retry automático:** `lib/gemini.ts` reintenta automáticamente errores 503/429 con backoff (5s → 15s)
+- **Delay entre imágenes:** 3s de pausa entre cada llamada a `/api/analyze` para respetar el rate limit del free tier
+- **Botón retry por card:** las cards con status `error` muestran un botón ↻ que reanaliza solo esa imagen sin tocar las demás
+
+---
+
+### Task 16: Auto-detectar temática, ciudad y regiones desde el scrape
+
+**Contexto:** Al ingresar la URL del sitio, el scraper ya extrae el texto del homepage. Con un prompt adicional a Gemini (solo texto, sin imagen) podemos detectar automáticamente la temática, ciudad y regiones del negocio y pre-completar esos campos en el formulario — editables por el usuario.
+
+**Files:**
+- Modify: `app/api/scrape/route.ts`
+- Modify: `lib/types.ts` (actualizar `ScrapeResponse`)
+- Modify: `app/page.tsx` (auto-fill al recibir respuesta del scrape)
+- Modify: `components/ContextPanel.tsx` (indicador visual de campo auto-detectado)
+
+- [ ] **Step 1: Actualizar `ScrapeResponse` en `lib/types.ts`**
+
+```typescript
+export interface ScrapeResponse {
+  text: string;
+  detectedNiche?: string;
+  detectedCity?: string;
+  detectedRegions?: string[];
+}
+```
+
+- [ ] **Step 2: Agregar función de detección en `app/api/scrape/route.ts`**
+
+Después de obtener el texto del homepage, llamar a Gemini con un prompt de extracción:
+
+```typescript
+async function detectContext(text: string, apiKey: string): Promise<{
+  niche?: string; city?: string; regions?: string[];
+}> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+
+  const prompt = `Analizá este texto de un sitio web y extraé información del negocio.
+Devolvé SOLO un JSON con estos campos (omitir si no hay información clara):
+{
+  "niche": "temática o industria del negocio en 2-5 palabras",
+  "city": "ciudad principal donde opera el negocio",
+  "regions": ["región o barrio 1", "región o barrio 2"]
+}
+
+Texto del sitio:
+${text.slice(0, 1500)}
+
+Respondé SOLO con el JSON, sin explicaciones.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const raw = result.response.text().trim()
+      .replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+```
+
+- [ ] **Step 3: Llamar a `detectContext` en el handler de `/api/scrape`**
+
+```typescript
+// en el POST handler, después de obtener `text`:
+const apiKey = process.env.GEMINI_API_KEY;
+const detected = apiKey ? await detectContext(text, apiKey) : {};
+
+return NextResponse.json({
+  text,
+  detectedNiche: detected.niche,
+  detectedCity: detected.city,
+  detectedRegions: detected.regions,
+});
+```
+
+- [ ] **Step 4: Auto-fill en `app/page.tsx`**
+
+En `handleUrlChange`, cuando llega la respuesta del scrape:
+
+```typescript
+if (res.ok) {
+  const data: ScrapeResponse = await res.json();
+  setSiteText(data.text || '');
+  if (data.detectedNiche && !niche.trim()) setNiche(data.detectedNiche);
+  if (data.detectedCity && !city.trim()) setCity(data.detectedCity);
+  if (data.detectedRegions?.length && !regions.length) setRegions(data.detectedRegions);
+}
+```
+
+> Solo auto-completa si el campo está vacío — no pisa lo que el usuario ya escribió.
+
+- [ ] **Step 5: Indicador visual en `ContextPanel.tsx`**
+
+Agregar un badge `Auto` junto a los campos pre-completados:
+
+```typescript
+// prop adicional en ContextPanel:
+autoDetected?: { niche?: boolean; city?: boolean; regions?: boolean };
+
+// junto a cada label auto-detectado:
+{autoDetected?.city && (
+  <span style={{ fontSize: 10, background: 'var(--accent)', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>Auto</span>
+)}
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add app/api/scrape/route.ts lib/types.ts app/page.tsx components/ContextPanel.tsx
+git commit -m "feat: auto-detect niche, city and regions from scraped homepage"
+git push
+```
