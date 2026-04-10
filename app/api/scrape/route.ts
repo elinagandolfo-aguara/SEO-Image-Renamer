@@ -13,9 +13,13 @@ async function detectContext(text: string, apiKey: string): Promise<{
 Devolvé SOLO un JSON con estos campos (omitir si no hay información clara):
 {
   "niche": "temática o industria del negocio en 2-5 palabras",
-  "city": "ciudad principal donde opera el negocio",
-  "regions": ["región o barrio 1", "región o barrio 2"]
+  "city": "ciudad o municipio específico donde opera el negocio (NO incluyas países ni estados)",
+  "regions": ["barrio o zona específica dentro de la ciudad 1", "barrio o zona 2"]
 }
+
+Reglas estrictas:
+- "city": debe ser una ciudad concreta (ej: "Miami", "Buenos Aires"). Si solo aparece el país o estado, omitir este campo.
+- "regions": solo barrios, distritos o zonas dentro de una ciudad (ej: "Coral Gables", "Palermo"). Si no hay zonas específicas mencionadas, omitir este campo completamente. NUNCA incluir países, estados ni regiones geográficas amplias.
 
 Texto del sitio:
 ${text.slice(0, 1500)}
