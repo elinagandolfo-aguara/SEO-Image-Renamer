@@ -6,6 +6,7 @@ import type { Language } from '@/lib/types';
 interface Props {
   brand: string; niche: string; url: string; language: Language;
   city: string; regions: string[]; keywords: string; isScraping: boolean;
+  autoDetected?: { niche?: boolean; city?: boolean; regions?: boolean };
   onBrandChange: (v: string) => void; onNicheChange: (v: string) => void;
   onUrlChange: (v: string) => void; onLanguageChange: (v: Language) => void;
   onCityChange: (v: string) => void; onRegionsChange: (v: string[]) => void;
@@ -18,8 +19,14 @@ const input: React.CSSProperties = {
   outline: 'none',
 };
 
+const autoBadge: React.CSSProperties = {
+  fontSize: 10, background: 'var(--accent)', color: '#fff',
+  borderRadius: 4, padding: '1px 5px', marginLeft: 6, fontWeight: 600,
+};
+
 export default function ContextPanel({
   brand, niche, url, language, city, regions, keywords, isScraping,
+  autoDetected,
   onBrandChange, onNicheChange, onUrlChange, onLanguageChange,
   onCityChange, onRegionsChange, onKeywordsChange,
 }: Props) {
@@ -40,7 +47,17 @@ export default function ContextPanel({
     <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 24, border: '1px solid var(--border)' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <input style={input} placeholder="Nombre de la marca" value={brand} onChange={e => onBrandChange(e.target.value)} />
-        <input style={input} placeholder="Temática del sitio (ej: cercos de piscina)" value={niche} onChange={e => onNicheChange(e.target.value)} />
+        <div style={{ position: 'relative' }}>
+          <input
+            style={{ ...input, paddingRight: autoDetected?.niche ? 56 : 12 }}
+            placeholder="Temática del sitio (ej: cercos de piscina)"
+            value={niche}
+            onChange={e => onNicheChange(e.target.value)}
+          />
+          {autoDetected?.niche && (
+            <span style={{ ...autoBadge, position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}>Auto</span>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
@@ -92,7 +109,17 @@ export default function ContextPanel({
 
       {expanded && (
         <div style={{ marginTop: 16, display: 'grid', gap: 12 }}>
-          <input style={input} placeholder="Ciudad" value={city} onChange={e => onCityChange(e.target.value)} />
+          <div style={{ position: 'relative' }}>
+            <input
+              style={{ ...input, paddingRight: autoDetected?.city ? 56 : 12 }}
+              placeholder="Ciudad"
+              value={city}
+              onChange={e => onCityChange(e.target.value)}
+            />
+            {autoDetected?.city && (
+              <span style={{ ...autoBadge, position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}>Auto</span>
+            )}
+          </div>
           <div>
             <input
               style={input}
@@ -102,7 +129,8 @@ export default function ContextPanel({
               onKeyDown={handleRegionKey}
             />
             {regions.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, alignItems: 'center' }}>
+                {autoDetected?.regions && <span style={autoBadge}>Auto</span>}
                 {regions.map((r, i) => (
                   <span key={i} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 20, padding: '3px 10px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
                     {r}

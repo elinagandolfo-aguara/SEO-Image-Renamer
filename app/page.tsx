@@ -6,7 +6,7 @@ import ImageUploader from '@/components/ImageUploader';
 import ImageCard from '@/components/ImageCard';
 import ProgressBar from '@/components/ProgressBar';
 import DownloadButton from '@/components/DownloadButton';
-import type { Language, ProcessedImage, AnalysisContext } from '@/lib/types';
+import type { Language, ProcessedImage, AnalysisContext, ScrapeResponse } from '@/lib/types';
 
 export default function Home() {
   const [brand, setBrand] = useState('');
@@ -18,6 +18,7 @@ export default function Home() {
   const [keywords, setKeywords] = useState('');
   const [siteText, setSiteText] = useState('');
   const [isScraping, setIsScraping] = useState(false);
+  const [autoDetected, setAutoDetected] = useState<{ niche?: boolean; city?: boolean; regions?: boolean }>({});
   const [images, setImages] = useState<ProcessedImage[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -51,8 +52,13 @@ export default function Home() {
           signal: controller.signal,
         });
         if (res.ok) {
-          const data = await res.json();
+          const data: ScrapeResponse = await res.json();
           setSiteText(data.text || '');
+          const detected: { niche?: boolean; city?: boolean; regions?: boolean } = {};
+          if (data.detectedNiche && !niche.trim()) { setNiche(data.detectedNiche); detected.niche = true; }
+          if (data.detectedCity && !city.trim()) { setCity(data.detectedCity); detected.city = true; }
+          if (data.detectedRegions?.length && !regions.length) { setRegions(data.detectedRegions); detected.regions = true; }
+          setAutoDetected(detected);
         }
       } catch (e) {
         if (e instanceof Error && e.name === 'AbortError') return;
@@ -127,6 +133,7 @@ export default function Home() {
     images.forEach(i => URL.revokeObjectURL(i.previewUrl));
     setBrand(''); setNiche(''); setUrl(''); setLanguage('ES');
     setCity(''); setRegions([]); setKeywords(''); setSiteText('');
+    setAutoDetected({});
     setImages([]);
   }
 
@@ -145,6 +152,7 @@ export default function Home() {
         <ContextPanel
           brand={brand} niche={niche} url={url} language={language}
           city={city} regions={regions} keywords={keywords} isScraping={isScraping}
+          autoDetected={autoDetected}
           onBrandChange={setBrand} onNicheChange={setNiche} onUrlChange={handleUrlChange}
           onLanguageChange={setLanguage} onCityChange={setCity}
           onRegionsChange={setRegions} onKeywordsChange={setKeywords}
