@@ -31,9 +31,6 @@ export interface ScrapeRequest {
 
 export interface ScrapeResponse {
   text: string;
-  detectedNiche?: string;
-  detectedCity?: string;
-  detectedRegions?: string[];
 }
 
 export interface AnalyzeRequest {
