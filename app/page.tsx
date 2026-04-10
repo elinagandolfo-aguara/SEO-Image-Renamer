@@ -72,41 +72,55 @@ export default function Home() {
     setImages(prev => [...prev, ...next].slice(0, 20));
   }, []);
 
-  async function handleAnalyze() {
-    if (!niche.trim()) { alert('Completá la temática del sitio.'); return; }
-    if (images.length === 0) { alert('Subí al menos una imagen.'); return; }
+  async function analyzeOne(image: ProcessedImage, context: AnalysisContext) {
+    setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'analyzing', error: undefined } : i));
+    try {
+      const base64 = await fileToBase64(image.file);
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType: image.file.type, context }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const result = await res.json();
+      setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'done', result } : i));
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Error desconocido';
+      setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'error', error } : i));
+    }
+  }
 
-    setIsAnalyzing(true);
-    const context: AnalysisContext = {
+  function buildContext(): AnalysisContext {
+    return {
       niche, siteText, language,
       ...(city && { city }),
       ...(regions.length && { regions }),
       ...(keywords && { keywords }),
     };
+  }
+
+  async function handleAnalyze() {
+    if (!niche.trim()) { alert('Completá la temática del sitio.'); return; }
+    if (images.length === 0) { alert('Subí al menos una imagen.'); return; }
+
+    setIsAnalyzing(true);
+    const context = buildContext();
+    const pending = images.filter(i => i.status === 'pending');
 
     try {
-      for (const image of images) {
-        if (image.status !== 'pending') continue;
-        setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'analyzing' } : i));
-
-        try {
-          const base64 = await fileToBase64(image.file);
-          const res = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: base64, mimeType: image.file.type, context }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          const result = await res.json();
-          setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'done', result } : i));
-        } catch (err) {
-          const error = err instanceof Error ? err.message : 'Error desconocido';
-          setImages(prev => prev.map(i => i.id === image.id ? { ...i, status: 'error', error } : i));
-        }
+      for (let idx = 0; idx < pending.length; idx++) {
+        if (idx > 0) await new Promise(r => setTimeout(r, 3000));
+        await analyzeOne(pending[idx], context);
       }
     } finally {
       setIsAnalyzing(false);
     }
+  }
+
+  async function handleRetry(id: string) {
+    const image = images.find(i => i.id === id);
+    if (!image) return;
+    await analyzeOne(image, buildContext());
   }
 
   function handleReset() {
@@ -140,7 +154,7 @@ export default function Home() {
 
         {images.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {images.map(img => <ImageCard key={img.id} image={img} />)}
+            {images.map(img => <ImageCard key={img.id} image={img} onRetry={() => handleRetry(img.id)} />)}
           </div>
         )}
 

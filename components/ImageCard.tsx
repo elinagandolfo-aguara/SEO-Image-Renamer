@@ -9,7 +9,7 @@ const STATUS = {
   error:     { label: 'Error',         color: 'var(--error)' },
 };
 
-export default function ImageCard({ image }: { image: ProcessedImage }) {
+export default function ImageCard({ image, onRetry }: { image: ProcessedImage; onRetry?: () => void }) {
   const { label, color } = STATUS[image.status];
 
   return (
@@ -25,11 +25,22 @@ export default function ImageCard({ image }: { image: ProcessedImage }) {
       </div>
 
       <div style={{ padding: '12px 16px', flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
             {image.file.name}
           </span>
-          <span style={{ fontSize: 12, fontWeight: 600, color, flexShrink: 0 }}>{label}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color }}>{label}</span>
+            {image.status === 'error' && onRetry && (
+              <button
+                onClick={onRetry}
+                title="Reintentar"
+                style={{ background: 'none', border: '1px solid var(--error)', borderRadius: 6, padding: '2px 6px', cursor: 'pointer', color: 'var(--error)', fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+              >
+                ↻
+              </button>
+            )}
+          </div>
         </div>
 
         {image.result && (
@@ -47,7 +58,7 @@ export default function ImageCard({ image }: { image: ProcessedImage }) {
           </>
         )}
 
-        {image.error && <p style={{ margin: 0, fontSize: 13, color: 'var(--error)' }}>{image.error}</p>}
+        {image.error && <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--error)' }}>{image.error}</p>}
       </div>
     </div>
   );
